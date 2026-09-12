@@ -1,0 +1,940 @@
+openapi: 3.0.3
+
+info:
+  title: Client Lead Management System API
+  description: |
+    Backend API for the Client Lead Management System (FUTURE_FS_02).
+
+    ## Authentication
+    The API uses a JSON Web Token delivered as an httpOnly cookie named `auth`.
+    Log in via `POST /api/auth/login`. The browser stores the cookie
+    automatically; the client must send credentials on every authenticated
+    request.
+
+    ## Rate limiting
+    - `POST /api/auth/login` - 10 attempts per source IP per 15 minutes
+    - `POST /api/capture` - 5 submissions per source IP per hour
+
+    ## Conventions
+    - Bodies are JSON except `GET /api/events`, which returns text/event-stream.
+    - Timestamps are ISO 8601 UTC.
+    - Identifiers are MongoDB ObjectId strings.
+    - List endpoints use offset pagination, default 50, maximum 200.
+    - Errors share one shape: `{ "error": { "code", "message", "fields"? } }`.
+  version: 1.0.0
+  contact:
+    name: Zelamene Shazi
+    email: shazizelamene@gmail.com
+
+servers:
+  - url: https://zelamene-crm-api.onrender.com
+    description: Production
+  - url: http://localhost:5000
+    description: Local development
+
+tags:
+  - name: Health
+    description: Liveness and database connectivity.
+  - name: Auth
+    description: Session management for the single admin user.
+  - name: Leads
+    description: Lead lifecycle management. All routes require authentication.
+  - name: Notes
+    description: Free-text context attached to a lead. Immutable in v1.
+  - name: Activity
+    description: Immutable record of state changes to a lead.
+  - name: Capture
+    description: Unauthenticated public lead submission.
+  - name: Realtime
+    description: Server-Sent Events stream for live dashboard updates.
+
+security:
+  - cookieAuth: []
+
+paths:
+
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Liveness and database connectivity check
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: API responded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, db]
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  db:
+                    type: boolean
+                    example: true
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate as the admin
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid:
+                summary: Standard login
+                value:
+                  email: admin@crm.local
+                  password: demo-password
+      responses:
+        '200':
+          description: Login successful. Sets the auth cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: auth=eyJhbGciOi...; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=604800
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: INVALID_CREDENTIALS
+                  message: Invalid email or password
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out
+      operationId: logout
+      responses:
+        '204':
+          description: Session cleared. No response body.
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Retrieve the current admin profile
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/leads:
+    get:
+      tags: [Leads]
+      summary: List leads
+      operationId: listLeads
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/LeadStatus'
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Paginated list of leads
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadListResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [Leads]
+      summary: Create a lead
+      operationId: createLead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadCreate'
+            examples:
+              minimal:
+                summary: Minimum required fields
+                value:
+                  name: Thandi Mokoena
+                  email: thandi@example.co.za
+                  source: referral
+              full:
+                summary: All fields
+                value:
+                  name: Thandi Mokoena
+                  email: thandi@example.co.za
+                  phone: "0821234567"
+                  company: Mokoena Consulting
+                  source: referral
+                  status: contacted
+                  followUpDate: "2026-09-20T00:00:00.000Z"
+      responses:
+        '201':
+          description: Lead created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/leads/{id}:
+    parameters:
+      - $ref: '#/components/parameters/LeadId'
+
+    get:
+      tags: [Leads]
+      summary: Retrieve a lead with its notes and activity
+      operationId: getLead
+      responses:
+        '200':
+          description: Lead with related records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      tags: [Leads]
+      summary: Update a lead
+      operationId: updateLead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadUpdate'
+            examples:
+              changeStatus:
+                summary: Move a lead to contacted
+                value:
+                  status: contacted
+              setFollowUp:
+                summary: Schedule a follow-up
+                value:
+                  followUpDate: "2026-09-20T00:00:00.000Z"
+              clearFollowUp:
+                summary: Clear the follow-up date
+                value:
+                  followUpDate: null
+      responses:
+        '200':
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Email conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: EMAIL_CONFLICT
+                  message: A lead with this email already exists
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [Leads]
+      summary: Delete a lead
+      operationId: deleteLead
+      responses:
+        '204':
+          description: Lead and its related records deleted. No response body.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/leads/{id}/notes:
+    parameters:
+      - $ref: '#/components/parameters/LeadId'
+
+    get:
+      tags: [Notes]
+      summary: List notes for a lead
+      operationId: listNotes
+      responses:
+        '200':
+          description: Notes for the lead
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [Notes]
+      summary: Append a note to a lead
+      operationId: createNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+            examples:
+              standard:
+                summary: A short note
+                value:
+                  body: Called back, asked for a quote by Friday.
+      responses:
+        '201':
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/leads/{id}/activity:
+    parameters:
+      - $ref: '#/components/parameters/LeadId'
+
+    get:
+      tags: [Activity]
+      summary: List activity for a lead
+      operationId: listActivity
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Activity entries for the lead
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/capture:
+    post:
+      tags: [Capture]
+      summary: Submit a lead from a public contact form
+      operationId: captureLead
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptureRequest'
+            examples:
+              standard:
+                summary: A typical submission
+                value:
+                  name: Thandi Mokoena
+                  email: thandi@example.co.za
+                  phone: "0821234567"
+                  company: Mokoena Consulting
+                  source: contact-form
+                  message: I'd like a quote for a website redesign.
+                  botField: ""
+              honeypotTriggered:
+                summary: A bot filled the hidden field
+                value:
+                  name: Spam Bot
+                  email: spam@example.com
+                  source: other
+                  message: Buy cheap watches
+                  botField: filled-by-bot
+      responses:
+        '200':
+          description: Accepted. Same response whether a lead was created or the honeypot triggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptureResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/events:
+    get:
+      tags: [Realtime]
+      summary: Server-Sent Events stream
+      operationId: subscribeToEvents
+      responses:
+        '200':
+          description: Event stream opened
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Newline-delimited SSE frames.
+              examples:
+                leadCreated:
+                  summary: A new lead arrived via public capture
+                  value: |
+                    event: lead.created
+                    data: {"type":"lead.created","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","name":"Thandi Mokoena","source":"contact-form","status":"new"}},"at":"2026-09-11T14:02:11.000Z"}
+
+                    : ping
+                leadUpdated:
+                  summary: A lead status changed
+                  value: |
+                    event: lead.updated
+                    data: {"type":"lead.updated","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","status":"contacted"}},"at":"2026-09-11T14:05:00.000Z"}
+                leadDeleted:
+                  summary: A lead was deleted
+                  value: |
+                    event: lead.deleted
+                    data: {"type":"lead.deleted","payload":{"leadId":"64f1c2b7a1e4d2f8b3c9a001"},"at":"2026-09-11T14:07:00.000Z"}
+                activityCreated:
+                  summary: An activity entry was recorded
+                  value: |
+                    event: activity.created
+                    data: {"type":"activity.created","payload":{"leadId":"64f1c2b7a1e4d2f8b3c9a001","activity":{"id":"64f1c2b7a1e4d2f8b3c9a003","type":"status_changed","meta":{"from":"new","to":"contacted"}}},"at":"2026-09-11T14:05:00.000Z"}
+                heartbeat:
+                  summary: Idle keep-alive frame
+                  value: |
+                    : ping
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth
+      description: |
+        Session cookie set by POST /api/auth/login. Contains a signed JWT
+        valid for 7 days. Marked HttpOnly, Secure, and SameSite=None.
+
+  parameters:
+    LeadId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the lead.
+      schema:
+        type: string
+        pattern: '^[a-f0-9]{24}$'
+        example: '64f1c2b7a1e4d2f8b3c9a001'
+
+  responses:
+
+    Unauthorized:
+      description: Missing, malformed, or expired session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required
+
+    NotFound:
+      description: The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Lead not found
+
+    ValidationError:
+      description: Request body or query string failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Invalid request body
+              fields:
+                email: Must be a valid email address
+                name: Must be between 1 and 120 characters
+
+    RateLimited:
+      description: Too many requests from this source address.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: RATE_LIMITED
+              message: Too many requests, please try again later
+
+    InternalError:
+      description: An unexpected server error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: An unexpected error occurred
+
+  schemas:
+
+    LeadStatus:
+      type: string
+      description: Lifecycle status of a lead.
+      enum:
+        - new
+        - contacted
+        - converted
+        - lost
+
+    LeadSource:
+      type: string
+      description: Where the lead originated.
+      enum:
+        - contact-form
+        - referral
+        - whatsapp
+        - other
+
+    ActivityType:
+      type: string
+      description: Kind of state change recorded.
+      enum:
+        - lead_created
+        - lead_updated
+        - status_changed
+        - follow_up_set
+        - note_added
+        - lead_deleted
+
+    User:
+      type: object
+      description: The single admin account. Password material is never returned.
+      required: [id, email, name]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a000'
+        email:
+          type: string
+          format: email
+          example: admin@crm.local
+        name:
+          type: string
+          example: Zelamene Shazi
+
+    Lead:
+      type: object
+      description: A single inbound enquiry from a potential customer.
+      required:
+        - id
+        - name
+        - email
+        - source
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a001'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Thandi Mokoena
+        email:
+          type: string
+          format: email
+          example: thandi@example.co.za
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+          example: '0821234567'
+        company:
+          type: string
+          nullable: true
+          maxLength: 120
+          example: Mokoena Consulting
+        source:
+          $ref: '#/components/schemas/LeadSource'
+        status:
+          $ref: '#/components/schemas/LeadStatus'
+        followUpDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-09-20T00:00:00.000Z'
+        lastContactedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-09-11T09:30:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-11T08:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-09-11T09:30:00.000Z'
+
+    Note:
+      type: object
+      description: Free-text context attached to a lead. Immutable in v1.
+      required: [id, leadId, body, createdAt]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a002'
+        leadId:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a001'
+        authorId:
+          type: string
+          nullable: true
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a000'
+        source:
+          type: string
+          nullable: true
+          enum: [admin, capture]
+          example: admin
+        body:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: Called back, asked for a quote by Friday.
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:00:00.000Z'
+
+    Activity:
+      type: object
+      description: Immutable record of a state change to a lead.
+      required: [id, leadId, type, createdAt]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a003'
+        leadId:
+          type: string
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a001'
+        actorId:
+          type: string
+          nullable: true
+          pattern: '^[a-f0-9]{24}$'
+          example: '64f1c2b7a1e4d2f8b3c9a000'
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        meta:
+          type: object
+          nullable: true
+          additionalProperties: true
+          example:
+            from: new
+            to: contacted
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:00:00.000Z'
+
+    LeadDetail:
+      allOf:
+        - $ref: '#/components/schemas/Lead'
+        - type: object
+          required: [notes, activity]
+          properties:
+            notes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Note'
+            activity:
+              type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+
+    LeadListResponse:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lead'
+        total:
+          type: integer
+          minimum: 0
+          example: 42
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@crm.local
+        password:
+          type: string
+          format: password
+          minLength: 1
+          example: demo-password
+
+    LeadCreate:
+      type: object
+      required: [name, email, source]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+          nullable: true
+        company:
+          type: string
+          maxLength: 120
+          nullable: true
+        source:
+          $ref: '#/components/schemas/LeadSource'
+        status:
+          $ref: '#/components/schemas/LeadStatus'
+        followUpDate:
+          type: string
+          format: date-time
+          nullable: true
+
+    LeadUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+          nullable: true
+        company:
+          type: string
+          maxLength: 120
+          nullable: true
+        source:
+          $ref: '#/components/schemas/LeadSource'
+        status:
+          $ref: '#/components/schemas/LeadStatus'
+        followUpDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastContactedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    NoteCreate:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: Called back, asked for a quote by Friday.
+
+    CaptureRequest:
+      type: object
+      required: [name, email, source, message]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 120
+        source:
+          $ref: '#/components/schemas/LeadSource'
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        botField:
+          type: string
+          example: ''
+
+    CaptureResponse:
+      type: object
+      required: [ok, message]
+      properties:
+        ok:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Thanks — we'll be in touch.
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Invalid request body
+            fields:
+              type: object
+              additionalProperties:
+                type: string
+              example:
+                email: Must be a valid email address
