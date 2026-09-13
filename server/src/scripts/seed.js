@@ -6,7 +6,7 @@ import { User, Lead, Note, Activity } from "../models/index.js";
 
 export const daysFromNow = (days) => {
   const d = new Date();
-  d.setHours(0, 0, 0, 0); // normalize to midnight
+  d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + days);
   return d;
 };
@@ -244,10 +244,8 @@ export async function seedDatabase() {
   console.log("==============================================\n");
 
   return summary;
-}
 
-// CLI entry — only runs when this file is executed directly,
-// not when imported by tests.
+
 const isDirectRun =
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href;
