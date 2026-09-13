@@ -244,7 +244,7 @@ export async function seedDatabase() {
   console.log("==============================================\n");
 
   return summary;
-
+}
 
 const isDirectRun =
   process.argv[1] &&

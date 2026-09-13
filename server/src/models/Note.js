@@ -27,7 +27,7 @@ const noteSchema = new mongoose.Schema(
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
-  }
+  },
 );
 
 // Compound index
