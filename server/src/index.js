@@ -21,7 +21,7 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });
 });
 
-// TODO(Phase 8): remove before submission. Satisfies Phase 1 DoD.
+// TODO(Phase 8): remove before submission. For now DoD Phase 
 app.get("/api/_debug/models", async (req, res) => {
   try {
     const user = await User.findOne({ email: "admin@crm.local" });
