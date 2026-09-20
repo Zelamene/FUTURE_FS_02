@@ -22,7 +22,7 @@ export async function seedDatabase() {
   console.log("Cleared existing User, Lead, Note, and Activity collections.");
 
   // 1. Create Admin User
-  const passwordHash = await bcryptjs.hash("demo-password", 12);
+  const passwordHash = await bcryptjs.hash("admin1234", 12);
   const admin = await User.create({
     name: "Zelamene Shazi",
     email: "admin@crm.local",
@@ -268,7 +268,7 @@ if (isDirectRun) {
     const summary = await seedDatabase();
     console.log("\nDemo credentials:");
     console.log("  Email:    admin@crm.local");
-    console.log("  Password: demo-password");
+    console.log("  Password: admin1234");
     console.log(
       `\nSummary: ${summary.users} users, ${summary.leads} leads, ${summary.notes} notes, ${summary.activities} activities\n`
     );
