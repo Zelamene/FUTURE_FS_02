@@ -392,3 +392,86 @@ describe("DELETE /api/leads/:id", () => {
     assert.equal(remainingActivity.length, 0);
   });
 });
+
+describe("Additional Phase 3 DoD Assertion Tests", () => {
+  it("POST /api/leads with invalid status returns 400 VALIDATION_ERROR", async () => {
+    const res = await request(app)
+      .post("/api/leads")
+      .set("Cookie", authCookie)
+      .send({ name: "Banana Lead", email: "banana@example.co.za", source: "other", status: "banana" });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "VALIDATION_ERROR");
+    assert.ok(res.body.error.fields.status);
+  });
+
+  it("PATCH /api/leads/:id with explicit lastContactedAt does not overwrite with auto-set date", async () => {
+    const lead = await Lead.create({
+      name: "Explicit Date Lead",
+      email: "explicit@example.co.za",
+      source: "referral",
+      status: "new",
+    });
+
+    const explicitDate = new Date("2026-01-01T00:00:00.000Z").toISOString();
+    const res = await request(app)
+      .patch(`/api/leads/${lead._id}`)
+      .set("Cookie", authCookie)
+      .send({ status: "contacted", lastContactedAt: explicitDate });
+
+    assert.equal(res.status, 200);
+    assert.equal(new Date(res.body.lastContactedAt).toISOString(), explicitDate);
+  });
+
+  it("PATCH /api/leads/:id with unknown field returns 400 VALIDATION_ERROR naming the field", async () => {
+    const lead = await Lead.create({
+      name: "Unknown Field Lead",
+      email: "unknown@example.co.za",
+      source: "referral",
+    });
+
+    const res = await request(app)
+      .patch(`/api/leads/${lead._id}`)
+      .set("Cookie", authCookie)
+      .send({ phoneNumber: "0821234567" });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "VALIDATION_ERROR");
+    assert.ok(res.body.error.fields.phoneNumber);
+  });
+
+  it("POST /api/leads/:id/notes with empty/whitespace body returns 400 VALIDATION_ERROR", async () => {
+    const thandi = await Lead.findOne({ name: "Thandi Mokoena" });
+    assert.ok(thandi);
+
+    const res = await request(app)
+      .post(`/api/leads/${thandi._id}/notes`)
+      .set("Cookie", authCookie)
+      .send({ body: "   " });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "VALIDATION_ERROR");
+    assert.ok(res.body.error.fields.body);
+  });
+
+  it("all protected lead routes return 401 UNAUTHORIZED without auth cookie", async () => {
+    const sampleId = "64f1c2b7a1e4d2f8b3c9a001";
+    const routes = [
+      { method: "get", path: "/api/leads" },
+      { method: "post", path: "/api/leads" },
+      { method: "get", path: `/api/leads/${sampleId}` },
+      { method: "patch", path: `/api/leads/${sampleId}` },
+      { method: "delete", path: `/api/leads/${sampleId}` },
+      { method: "get", path: `/api/leads/${sampleId}/notes` },
+      { method: "post", path: `/api/leads/${sampleId}/notes` },
+      { method: "get", path: `/api/leads/${sampleId}/activity` },
+    ];
+
+    for (const r of routes) {
+      const res = await request(app)[r.method](r.path);
+      assert.equal(res.status, 401, `${r.method.toUpperCase()} ${r.path} should require auth`);
+      assert.equal(res.body.error.code, "UNAUTHORIZED");
+    }
+  });
+});
+

@@ -92,7 +92,7 @@ paths:
                 summary: Standard login
                 value:
                   email: admin@crm.local
-                  password: demo-password
+                  password: admin1234
       responses:
         '200':
           description: Login successful. Sets the auth cookie.

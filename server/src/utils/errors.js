@@ -32,15 +32,35 @@ export const internalError = (message = "An unexpected error occurred") =>
 export const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
+const formatZodIssues = (issues) => {
+  const fields = {};
+  for (const issue of issues) {
+    if (issue.code === "unrecognized_keys") {
+      for (const key of issue.keys) {
+        fields[key] = `Unrecognized field: '${key}'`;
+      }
+    } else {
+      const fieldPath = issue.path.join(".") || "body";
+      fields[fieldPath] = issue.message;
+    }
+  }
+  return fields;
+};
+
 export const validate = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);
   if (!result.success) {
-    const fields = {};
-    for (const issue of result.error.issues) {
-      fields[issue.path.join(".")] = issue.message;
-    }
-    return next(validationError(fields));
+    return next(validationError(formatZodIssues(result.error.issues)));
   }
   req.body = result.data;
+  next();
+};
+
+export const validateQuery = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.query);
+  if (!result.success) {
+    return next(validationError(formatZodIssues(result.error.issues)));
+  }
+  req.validatedQuery = result.data;
   next();
 };

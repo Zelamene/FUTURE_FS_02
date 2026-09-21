@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { Lead, Note, Activity } from "../models/index.js";
 import { requireAuth } from "../middleware/requireAuth.js";
-import { asyncHandler, validate, notFound } from "../utils/errors.js";
+import { asyncHandler, validate, validateQuery, notFound } from "../utils/errors.js";
 
 const router = Router();
 
@@ -11,43 +11,66 @@ router.use(requireAuth);
 const isValidObjectId = (id) => typeof id === "string" && /^[a-f0-9]{24}$/.test(id);
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const createLeadSchema = z.object({
-  name: z.string({ required_error: "Name is required" }).min(1, "Name is required").max(120, "Name cannot exceed 120 characters").trim(),
-  email: z.string({ required_error: "Email is required" }).email("Invalid email address").trim().toLowerCase(),
-  phone: z.string().max(30, "Phone cannot exceed 30 characters").trim().nullable().optional(),
-  company: z.string().max(120, "Company cannot exceed 120 characters").trim().nullable().optional(),
-  source: z.enum(["contact-form", "referral", "whatsapp", "other"], { required_error: "Source is required" }),
-  status: z.enum(["new", "contacted", "converted", "lost"]).optional().default("new"),
-  followUpDate: z.string().nullable().optional().transform((val) => (val ? new Date(val) : val)),
-});
+const listQuerySchema = z
+  .object({
+    status: z.enum(["new", "contacted", "converted", "lost"]).optional(),
+    source: z.enum(["contact-form", "referral", "whatsapp", "other"]).optional(),
+    search: z.string().max(200).optional(),
+    sort: z.enum(["createdAt_desc", "createdAt_asc", "followUpDate_asc", "name_asc"]).optional(),
+    limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+    offset: z.coerce.number().int().min(0).optional().default(0),
+  })
+  .strict();
 
-const updateLeadSchema = z.object({
-  name: z.string().min(1, "Name is required").max(120, "Name cannot exceed 120 characters").trim().optional(),
-  email: z.string().email("Invalid email address").trim().toLowerCase().optional(),
-  phone: z.string().max(30, "Phone cannot exceed 30 characters").trim().nullable().optional(),
-  company: z.string().max(120, "Company cannot exceed 120 characters").trim().nullable().optional(),
-  source: z.enum(["contact-form", "referral", "whatsapp", "other"]).optional(),
-  status: z.enum(["new", "contacted", "converted", "lost"]).optional(),
-  followUpDate: z.string().nullable().optional().transform((val) => (val !== undefined ? (val ? new Date(val) : null) : undefined)),
-  lastContactedAt: z.string().nullable().optional().transform((val) => (val !== undefined ? (val ? new Date(val) : null) : undefined)),
-});
+const paginationQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+    offset: z.coerce.number().int().min(0).optional().default(0),
+  })
+  .strict();
 
-const createNoteSchema = z.object({
-  body: z.string({ required_error: "Note body is required" }).min(1, "Note body is required").max(2000, "Note body cannot exceed 2000 characters").trim(),
-});
+const createLeadSchema = z
+  .object({
+    name: z.string({ required_error: "Name is required" }).trim().min(1, "Name is required").max(120, "Name cannot exceed 120 characters"),
+    email: z.string({ required_error: "Email is required" }).trim().toLowerCase().email("Invalid email address"),
+    phone: z.string().trim().max(30, "Phone cannot exceed 30 characters").nullable().optional(),
+    company: z.string().trim().max(120, "Company cannot exceed 120 characters").nullable().optional(),
+    source: z.enum(["contact-form", "referral", "whatsapp", "other"], { required_error: "Source is required" }),
+    status: z.enum(["new", "contacted", "converted", "lost"]).optional().default("new"),
+    followUpDate: z.string().nullable().optional().transform((val) => (val ? new Date(val) : val)),
+  })
+  .strict();
+
+const updateLeadSchema = z
+  .object({
+    name: z.string().trim().min(1, "Name is required").max(120, "Name cannot exceed 120 characters").optional(),
+    email: z.string().trim().toLowerCase().email("Invalid email address").optional(),
+    phone: z.string().trim().max(30, "Phone cannot exceed 30 characters").nullable().optional(),
+    company: z.string().trim().max(120, "Company cannot exceed 120 characters").nullable().optional(),
+    source: z.enum(["contact-form", "referral", "whatsapp", "other"]).optional(),
+    status: z.enum(["new", "contacted", "converted", "lost"]).optional(),
+    followUpDate: z.string().nullable().optional().transform((val) => (val !== undefined ? (val ? new Date(val) : null) : undefined)),
+    lastContactedAt: z.string().nullable().optional().transform((val) => (val !== undefined ? (val ? new Date(val) : null) : undefined)),
+  })
+  .strict();
+
+const createNoteSchema = z
+  .object({
+    body: z.string({ required_error: "Note body is required" }).trim().min(1, "Note body is required").max(2000, "Note body cannot exceed 2000 characters"),
+  })
+  .strict();
 
 router.get(
   "/",
+  validateQuery(listQuerySchema),
   asyncHandler(async (req, res) => {
+    const { status, source, search, sort, limit, offset } = req.validatedQuery;
     const filter = {};
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-    if (req.query.source) {
-      filter.source = req.query.source;
-    }
-    if (req.query.search) {
-      const searchRegex = new RegExp(escapeRegex(req.query.search), "i");
+
+    if (status) filter.status = status;
+    if (source) filter.source = source;
+    if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), "i");
       filter.$or = [
         { name: searchRegex },
         { email: searchRegex },
@@ -55,15 +78,12 @@ router.get(
       ];
     }
 
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
-    const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
-
     const pipeline = [];
     if (Object.keys(filter).length > 0) {
       pipeline.push({ $match: filter });
     }
 
-    if (req.query.sort === "followUpDate_asc") {
+    if (sort === "followUpDate_asc") {
       pipeline.push({
         $addFields: {
           hasFollowUp: { $cond: [{ $eq: ["$followUpDate", null] }, 1, 0] },
@@ -72,9 +92,9 @@ router.get(
       pipeline.push({
         $sort: { hasFollowUp: 1, followUpDate: 1, createdAt: -1 },
       });
-    } else if (req.query.sort === "createdAt_asc") {
+    } else if (sort === "createdAt_asc") {
       pipeline.push({ $sort: { createdAt: 1 } });
-    } else if (req.query.sort === "name_asc") {
+    } else if (sort === "name_asc") {
       pipeline.push({ $sort: { name: 1 } });
     } else {
       pipeline.push({ $sort: { createdAt: -1 } });
@@ -308,6 +328,7 @@ router.post(
 
 router.get(
   "/:id/activity",
+  validateQuery(paginationQuerySchema),
   asyncHandler(async (req, res) => {
     if (!isValidObjectId(req.params.id)) {
       throw notFound("Lead not found");
@@ -318,8 +339,7 @@ router.get(
       throw notFound("Lead not found");
     }
 
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
-    const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+    const { limit, offset } = req.validatedQuery;
 
     const activity = await Activity.find({ leadId: lead._id })
       .sort({ createdAt: -1 })
