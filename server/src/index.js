@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import { User, Lead } from "./models/index.js";
 import authRouter from "./routes/auth.js";
 import leadsRouter from "./routes/leads.js";
+import captureRouter from "./routes/capture.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -21,11 +22,13 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/leads", leadsRouter);
+app.use("/api/capture", captureRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });
 });
 
+// TODO(Phase 8): remove before submission. Satisfies Phase 1 DoD.
 app.get("/api/_debug/models", async (req, res) => {
   try {
     const user = await User.findOne({ email: "admin@crm.local" });
