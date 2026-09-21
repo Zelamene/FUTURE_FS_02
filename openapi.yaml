@@ -295,16 +295,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-        '409':
-          description: Email conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                error:
-                  code: EMAIL_CONFLICT
-                  message: A lead with this email already exists
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -620,7 +610,6 @@ components:
         - status_changed
         - follow_up_set
         - note_added
-        - lead_deleted
 
     User:
       type: object

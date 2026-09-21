@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { pathToFileURL } from "node:url";
 import { User, Lead } from "./models/index.js";
 import authRouter from "./routes/auth.js";
+import leadsRouter from "./routes/leads.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
+app.use("/api/leads", leadsRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });

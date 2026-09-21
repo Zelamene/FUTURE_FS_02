@@ -20,7 +20,6 @@ const activitySchema = new mongoose.Schema(
         "status_changed",
         "follow_up_set",
         "note_added",
-        "lead_deleted",
       ],
       required: true,
     },
