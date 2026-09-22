@@ -1,0 +1,1465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CRM · Brand Reference</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-canvas: #fafafa;
+        --bg-surface: #ffffff;
+        --bg-subtle: #f4f4f5;
+        --bg-muted: #e4e4e7;
+
+        --border-default: #e4e4e7;
+        --border-strong: #a1a1aa;
+
+        --text-primary: #18181b;
+        --text-secondary: #52525b;
+        --text-tertiary: #71717a;
+
+        --accent: #1d4ed8;
+        --accent-hover: #1e40af;
+        --accent-subtle-bg: #eff6ff;
+
+        --success: #15803d;
+        --success-subtle-bg: #f0fdf4;
+        --warning: #b45309;
+        --warning-subtle-bg: #fffbeb;
+        --danger: #b91c1c;
+        --danger-subtle-bg: #fef2f2;
+        --neutral-subtle-bg: #f4f4f5;
+
+        --focus-ring: rgba(29, 78, 216, 0.15);
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+        --radius-sm: 4px;
+        --radius-md: 6px;
+        --radius-lg: 8px;
+        --radius-xl: 12px;
+        --radius-full: 9999px;
+
+        --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+      }
+
+      .dark {
+        --bg-canvas: #09090b;
+        --bg-surface: #18181b;
+        --bg-subtle: #27272a;
+        --bg-muted: #3f3f46;
+
+        --border-default: #27272a;
+        --border-strong: #52525b;
+
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-tertiary: #71717a;
+
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --accent-subtle-bg: rgba(30, 58, 138, 0.3);
+
+        --success: #4ade80;
+        --success-subtle-bg: rgba(20, 83, 45, 0.3);
+        --warning: #fbbf24;
+        --warning-subtle-bg: rgba(120, 53, 15, 0.3);
+        --danger: #f87171;
+        --danger-subtle-bg: rgba(127, 29, 29, 0.3);
+        --neutral-subtle-bg: #27272a;
+
+        --focus-ring: rgba(59, 130, 246, 0.25);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        min-height: 100vh;
+      }
+
+      .nav {
+        border-right: 1px solid var(--border-default);
+        background: var(--bg-surface);
+        padding: 24px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+      }
+
+      .nav-brand {
+        padding: 0 20px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        border-bottom: 1px solid var(--border-default);
+        margin-bottom: 16px;
+      }
+
+      .nav-brand small {
+        display: block;
+        font-weight: 400;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        margin-top: 2px;
+      }
+
+      .nav-section {
+        padding: 16px 20px 6px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+        font-weight: 500;
+      }
+
+      .nav a {
+        display: block;
+        padding: 5px 20px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        border-left: 2px solid transparent;
+      }
+
+      .nav a:hover {
+        color: var(--text-primary);
+        background: var(--bg-subtle);
+        text-decoration: none;
+      }
+
+      .main {
+        max-width: 920px;
+        padding: 48px 48px 96px;
+      }
+
+      .section {
+        margin-bottom: 64px;
+        scroll-margin-top: 24px;
+      }
+
+      .section-title {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0 0 6px;
+      }
+
+      .section-desc {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin: 0 0 24px;
+        max-width: 60ch;
+      }
+
+      .sub-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin: 32px 0 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-default);
+      }
+
+      .toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: var(--font-sans);
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+      }
+
+      .toggle:hover {
+        background: var(--bg-subtle);
+      }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 8px;
+      }
+
+      .swatch {
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: var(--bg-surface);
+      }
+
+      .swatch-chip {
+        height: 56px;
+        border-bottom: 1px solid var(--border-default);
+      }
+
+      .swatch-meta {
+        padding: 10px 12px;
+      }
+
+      .swatch-name {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+      }
+
+      .swatch-value {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 20px;
+        align-items: baseline;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border-default);
+      }
+
+      .type-token {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .type-spec {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+        display: block;
+        margin-top: 4px;
+      }
+
+      .scale-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .scale-row {
+        display: grid;
+        grid-template-columns: 80px 80px 1fr;
+        gap: 16px;
+        align-items: center;
+        padding: 8px 0;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+
+      .scale-bar {
+        height: 8px;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+
+      .radius-demo {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .radius-item {
+        text-align: center;
+      }
+
+      .radius-box {
+        width: 72px;
+        height: 72px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-default);
+        margin-bottom: 6px;
+      }
+
+      .radius-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+      }
+
+      .elevations {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+      }
+
+      .elev {
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        padding: 20px 16px;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+
+      .preview {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 12px;
+      }
+
+      .preview-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .preview-row + .preview-row {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-default);
+      }
+
+      .preview-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .btn {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition:
+          background 100ms ease,
+          color 100ms ease,
+          border-color 100ms ease;
+        padding: 0 16px;
+        height: 36px;
+        line-height: 1;
+      }
+
+      .btn:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--bg-canvas),
+          0 0 0 4px var(--accent);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-secondary {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border-color: var(--border-default);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-subtle);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-secondary);
+      }
+
+      .btn-ghost:hover {
+        background: var(--bg-subtle);
+        color: var(--text-primary);
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: #ffffff;
+      }
+
+      .btn-danger:hover {
+        filter: brightness(0.92);
+      }
+
+      .btn-sm {
+        height: 32px;
+        font-size: 13px;
+        padding: 0 12px;
+      }
+
+      .btn-lg {
+        height: 44px;
+        font-size: 14px;
+        padding: 0 20px;
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .field {
+        display: block;
+        width: 100%;
+        max-width: 360px;
+      }
+
+      .field-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .field-input {
+        width: 100%;
+        height: 36px;
+        padding: 0 12px;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        color: var(--text-primary);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-md);
+        outline: none;
+        transition:
+          border-color 100ms ease,
+          box-shadow 100ms ease;
+      }
+
+      .field-input::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      .field-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--focus-ring);
+      }
+
+      .field-input.error {
+        border-color: var(--danger);
+      }
+
+      .field-error {
+        font-size: 12px;
+        color: var(--danger);
+        margin-top: 6px;
+      }
+
+      .field-helper {
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin-top: 6px;
+      }
+
+      textarea.field-input {
+        height: auto;
+        padding: 10px 12px;
+        min-height: 96px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: var(--radius-full);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+      }
+
+      .badge-new {
+        background: var(--neutral-subtle-bg);
+        color: var(--text-secondary);
+      }
+
+      .badge-contacted {
+        background: var(--warning-subtle-bg);
+        color: var(--warning);
+      }
+
+      .badge-converted {
+        background: var(--success-subtle-bg);
+        color: var(--success);
+      }
+
+      .badge-lost {
+        background: var(--danger-subtle-bg);
+        color: var(--danger);
+      }
+
+      .card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+
+      .card-body {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        font-size: 13px;
+      }
+
+      .table th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-default);
+      }
+
+      .table td {
+        padding: 0 16px;
+        height: 52px;
+        border-bottom: 1px solid var(--border-default);
+        vertical-align: middle;
+      }
+
+      .table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .table tr:hover td {
+        background: var(--bg-subtle);
+      }
+
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 360px;
+        padding: 12px 16px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-left: 3px solid var(--text-secondary);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        font-size: 14px;
+        color: var(--text-primary);
+      }
+
+      .toast.success {
+        border-left-color: var(--success);
+      }
+
+      .toast.error {
+        border-left-color: var(--danger);
+      }
+
+      .modal-backdrop {
+        background: rgba(0, 0, 0, 0.4);
+        padding: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        justify-content: center;
+      }
+
+      .dark .modal-backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 480px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 24px;
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        letter-spacing: -0.01em;
+      }
+
+      .modal-body {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0 0 20px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 56px 24px;
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .empty p {
+        margin: 0 0 4px;
+      }
+
+      .mono {
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      .muted {
+        color: var(--text-tertiary);
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border-default);
+        margin: 32px 0;
+      }
+
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          position: relative;
+          height: auto;
+        }
+
+        .main {
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <button class="toggle" onclick="toggleTheme()">Toggle theme</button>
+
+    <div class="layout">
+      <aside class="nav">
+        <div class="nav-brand">CRM</div>
+        <div class="nav-section">Foundations</div>
+        <a href="#colour">Colour</a>
+        <a href="#type">Typography</a>
+        <a href="#spacing">Spacing</a>
+        <a href="#radius">Radius</a>
+        <a href="#elevation">Elevation</a>
+        <a href="#motion">Motion</a>
+        <div class="nav-section">Components</div>
+        <a href="#buttons">Buttons</a>
+        <a href="#inputs">Inputs</a>
+        <a href="#badges">Status badges</a>
+        <a href="#cards">Cards</a>
+        <a href="#table">Table</a>
+        <a href="#toast">Toast</a>
+        <a href="#modal">Modal</a>
+        <a href="#empty">Empty state</a>
+      </aside>
+
+      <main class="main">
+        <section class="section" id="colour">
+          <h2 class="section-title">Colour</h2>
+          <p class="section-desc">
+            One accent, used sparingly. Every other colour is a neutral or a
+            semantic state. Colours are defined as CSS custom properties and
+            applied through semantic tokens — never referenced by hex in
+            component code.
+          </p>
+
+          <h3 class="sub-title">Surface and text</h3>
+          <div class="swatches">
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--bg-canvas)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">bg-canvas</div>
+                <div class="swatch-value" data-token="bg-canvas"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--bg-surface)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">bg-surface</div>
+                <div class="swatch-value" data-token="bg-surface"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--bg-subtle)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">bg-subtle</div>
+                <div class="swatch-value" data-token="bg-subtle"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--border-default)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">border-default</div>
+                <div class="swatch-value" data-token="border-default"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--text-primary)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">text-primary</div>
+                <div class="swatch-value" data-token="text-primary"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--text-secondary)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">text-secondary</div>
+                <div class="swatch-value" data-token="text-secondary"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--text-tertiary)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">text-tertiary</div>
+                <div class="swatch-value" data-token="text-tertiary"></div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="sub-title">Accent</h3>
+          <div class="swatches">
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--accent)"></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">accent</div>
+                <div class="swatch-value" data-token="accent"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--accent-hover)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">accent-hover</div>
+                <div class="swatch-value" data-token="accent-hover"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--accent-subtle-bg)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">accent-subtle-bg</div>
+                <div class="swatch-value" data-token="accent-subtle-bg"></div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="sub-title">Semantic states</h3>
+          <div class="swatches">
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--success)"></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">success</div>
+                <div class="swatch-value" data-token="success"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--success-subtle-bg)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">success-subtle-bg</div>
+                <div class="swatch-value" data-token="success-subtle-bg"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--warning)"></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">warning</div>
+                <div class="swatch-value" data-token="warning"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--warning-subtle-bg)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">warning-subtle-bg</div>
+                <div class="swatch-value" data-token="warning-subtle-bg"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--danger)"></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">danger</div>
+                <div class="swatch-value" data-token="danger"></div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-chip"
+                style="background: var(--danger-subtle-bg)"
+              ></div>
+              <div class="swatch-meta">
+                <div class="swatch-name">danger-subtle-bg</div>
+                <div class="swatch-value" data-token="danger-subtle-bg"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="type">
+          <h2 class="section-title">Typography</h2>
+          <p class="section-desc">
+            Geist Sans for everything. Geist Mono for identifiers, code,
+            timestamps, and tabular numbers. Three weights only: 400, 500, 600.
+            Line lengths capped at roughly 70 characters.
+          </p>
+
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-2xl</div>
+              <span class="type-spec">28/36 · 600</span>
+            </div>
+            <div
+              style="
+                font-size: 28px;
+                line-height: 36px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+              "
+            >
+              Dashboard
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-xl</div>
+              <span class="type-spec">22/28 · 600</span>
+            </div>
+            <div
+              style="
+                font-size: 22px;
+                line-height: 28px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+              "
+            >
+              Leads
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-lg</div>
+              <span class="type-spec">18/28 · 600</span>
+            </div>
+            <div style="font-size: 18px; line-height: 28px; font-weight: 600">
+              Thandi Mokoena
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-md</div>
+              <span class="type-spec">16/24 · 500</span>
+            </div>
+            <div style="font-size: 16px; line-height: 24px; font-weight: 500">
+              Filter by status
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-base</div>
+              <span class="type-spec">14/20 · 400</span>
+            </div>
+            <div style="font-size: 14px">
+              Called back, asked for a quote by Friday.
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-sm</div>
+              <span class="type-spec">13/20 · 400</span>
+            </div>
+            <div style="font-size: 13px">thandi@example.co.za</div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-xs</div>
+              <span class="type-spec">12/16 · 400</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary)">
+              Updated 2 minutes ago
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">text-2xs</div>
+              <span class="type-spec">11/16 · 500</span>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--text-secondary);
+              "
+            >
+              Status
+            </div>
+          </div>
+          <div class="type-row">
+            <div>
+              <div class="type-token">mono</div>
+              <span class="type-spec">Geist Mono</span>
+            </div>
+            <div class="mono">64f1c2b7a1e4d2f8b3c9a001</div>
+          </div>
+        </section>
+
+        <section class="section" id="spacing">
+          <h2 class="section-title">Spacing</h2>
+          <p class="section-desc">
+            Base unit is 4 pixels. Nine values, no others. If 20px does not fit,
+            use 16 or 24.
+          </p>
+
+          <div class="scale-list">
+            <div class="scale-row">
+              <span>space-1</span><span>4px</span>
+              <div class="scale-bar" style="width: 4px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-2</span><span>8px</span>
+              <div class="scale-bar" style="width: 8px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-3</span><span>12px</span>
+              <div class="scale-bar" style="width: 12px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-4</span><span>16px</span>
+              <div class="scale-bar" style="width: 16px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-5</span><span>20px</span>
+              <div class="scale-bar" style="width: 20px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-6</span><span>24px</span>
+              <div class="scale-bar" style="width: 24px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-8</span><span>32px</span>
+              <div class="scale-bar" style="width: 32px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-12</span><span>48px</span>
+              <div class="scale-bar" style="width: 48px"></div>
+            </div>
+            <div class="scale-row">
+              <span>space-16</span><span>64px</span>
+              <div class="scale-bar" style="width: 64px"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="radius">
+          <h2 class="section-title">Radius</h2>
+          <p class="section-desc">
+            Maximum 12px on any rectangle. Pills and avatars are the only
+            fully-round elements.
+          </p>
+
+          <div class="radius-demo">
+            <div class="radius-item">
+              <div
+                class="radius-box"
+                style="border-radius: var(--radius-sm)"
+              ></div>
+              <div class="radius-label">sm · 4</div>
+            </div>
+            <div class="radius-item">
+              <div
+                class="radius-box"
+                style="border-radius: var(--radius-md)"
+              ></div>
+              <div class="radius-label">md · 6</div>
+            </div>
+            <div class="radius-item">
+              <div
+                class="radius-box"
+                style="border-radius: var(--radius-lg)"
+              ></div>
+              <div class="radius-label">lg · 8</div>
+            </div>
+            <div class="radius-item">
+              <div
+                class="radius-box"
+                style="border-radius: var(--radius-xl)"
+              ></div>
+              <div class="radius-label">xl · 12</div>
+            </div>
+            <div class="radius-item">
+              <div
+                class="radius-box"
+                style="border-radius: var(--radius-full)"
+              ></div>
+              <div class="radius-label">full</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="elevation">
+          <h2 class="section-title">Elevation</h2>
+          <p class="section-desc">
+            Only overlays cast shadows. Cards, inputs, and buttons are defined
+            by borders.
+          </p>
+
+          <div class="elevations">
+            <div class="elev" style="border: 1px solid var(--border-default)">
+              shadow-none<br /><span class="muted">cards · inputs · rows</span>
+            </div>
+            <div class="elev" style="box-shadow: var(--shadow-sm)">
+              shadow-sm<br /><span class="muted">dropdowns</span>
+            </div>
+            <div class="elev" style="box-shadow: var(--shadow-md)">
+              shadow-md<br /><span class="muted">modals</span>
+            </div>
+            <div class="elev" style="box-shadow: var(--shadow-lg)">
+              shadow-lg<br /><span class="muted">toasts</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="motion">
+          <h2 class="section-title">Motion</h2>
+          <p class="section-desc">
+            Three durations. Only opacity and transform animate. No bouncy
+            easing. Reduced-motion preference disables non-essential
+            transitions.
+          </p>
+
+          <div class="preview">
+            <div class="preview-row">
+              <span class="mono" style="width: 140px">motion-fast · 100ms</span>
+              <span class="muted" style="font-size: 13px"
+                >Hover, focus, colour transitions</span
+              >
+            </div>
+            <div class="preview-row">
+              <span class="mono" style="width: 140px">motion-base · 150ms</span>
+              <span class="muted" style="font-size: 13px"
+                >Standard transitions</span
+              >
+            </div>
+            <div class="preview-row">
+              <span class="mono" style="width: 140px">motion-slow · 250ms</span>
+              <span class="muted" style="font-size: 13px"
+                >Modals, dropdowns, larger movements</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="buttons">
+          <h2 class="section-title">Buttons</h2>
+          <p class="section-desc">
+            Three sizes, four variants. No shadows. No gradients. No transforms
+            on hover.
+          </p>
+
+          <div class="preview">
+            <div class="preview-label">Primary</div>
+            <div class="preview-row">
+              <button class="btn btn-primary btn-sm">Add lead</button>
+              <button class="btn btn-primary">Add lead</button>
+              <button class="btn btn-primary btn-lg">Add lead</button>
+              <button class="btn btn-primary" disabled>Disabled</button>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="preview-label">Secondary</div>
+            <div class="preview-row">
+              <button class="btn btn-secondary btn-sm">Cancel</button>
+              <button class="btn btn-secondary">Cancel</button>
+              <button class="btn btn-secondary btn-lg">Cancel</button>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="preview-label">Ghost</div>
+            <div class="preview-row">
+              <button class="btn btn-ghost btn-sm">Dismiss</button>
+              <button class="btn btn-ghost">Dismiss</button>
+              <button class="btn btn-ghost">View activity</button>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="preview-label">Destructive</div>
+            <div class="preview-row">
+              <button class="btn btn-danger">Delete lead</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="inputs">
+          <h2 class="section-title">Inputs</h2>
+          <p class="section-desc">
+            Label above. Placeholder shows an example value, not the field name.
+            Focus uses a border colour change plus a soft ring.
+          </p>
+
+          <div class="preview">
+            <div class="field">
+              <label class="field-label" for="i1">Email</label>
+              <input
+                id="i1"
+                class="field-input"
+                type="email"
+                placeholder="thandi@example.co.za"
+              />
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="field">
+              <label class="field-label" for="i2">Email</label>
+              <input
+                id="i2"
+                class="field-input"
+                type="email"
+                value="not-an-email"
+                readonly
+              />
+              <div class="field-error">Must be a valid email address</div>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="field">
+              <label class="field-label" for="i3">Company</label>
+              <input
+                id="i3"
+                class="field-input"
+                type="text"
+                placeholder="Mokoena Consulting"
+              />
+              <div class="field-helper">Optional</div>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="field">
+              <label class="field-label" for="i4">Message</label>
+              <textarea
+                id="i4"
+                class="field-input"
+                placeholder="I'd like a quote for a website redesign."
+              ></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="badges">
+          <h2 class="section-title">Status badges</h2>
+          <p class="section-desc">
+            One treatment per lifecycle status. Colour is never the only signal
+            — the label always names the status.
+          </p>
+
+          <div class="preview">
+            <div class="preview-row">
+              <span class="badge badge-new">New</span>
+              <span class="badge badge-contacted">Contacted</span>
+              <span class="badge badge-converted">Converted</span>
+              <span class="badge badge-lost">Lost</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="cards">
+          <h2 class="section-title">Cards</h2>
+          <p class="section-desc">Defined by a border, not a shadow.</p>
+
+          <div class="card">
+            <h3 class="card-title">Thandi Mokoena</h3>
+            <p class="card-body">
+              Contacted · Referral · Follow-up scheduled for 20 September.
+            </p>
+          </div>
+        </section>
+
+        <section class="section" id="table">
+          <h2 class="section-title">Table</h2>
+          <p class="section-desc">
+            Row hover uses background only. No zebra striping. Header text is
+            uppercase, small, and secondary.
+          </p>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Follow-up</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Thandi Mokoena</td>
+                <td class="muted">thandi@example.co.za</td>
+                <td><span class="badge badge-contacted">Contacted</span></td>
+                <td class="mono">2026-09-20</td>
+              </tr>
+              <tr>
+                <td>Sipho Dlamini</td>
+                <td class="muted">sipho@example.co.za</td>
+                <td><span class="badge badge-new">New</span></td>
+                <td class="muted">—</td>
+              </tr>
+              <tr>
+                <td>Naledi Khumalo</td>
+                <td class="muted">naledi@example.co.za</td>
+                <td><span class="badge badge-converted">Converted</span></td>
+                <td class="muted">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="section" id="toast">
+          <h2 class="section-title">Toast</h2>
+          <p class="section-desc">
+            Bottom-right on desktop, bottom-centre on mobile. Left border
+            carries the semantic state. Auto-dismiss after four seconds.
+          </p>
+
+          <div class="preview">
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+              "
+            >
+              <div class="toast success">Lead created.</div>
+              <div class="toast error">Couldn't save changes. Try again.</div>
+              <div class="toast">Sync complete.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="modal">
+          <h2 class="section-title">Modal</h2>
+          <p class="section-desc">
+            Left-aligned title and body. Actions right-aligned at the bottom. No
+            centred text, no illustration.
+          </p>
+
+          <div class="modal-backdrop">
+            <div class="modal">
+              <h3 class="modal-title">Delete this lead?</h3>
+              <p class="modal-body">
+                This also removes its notes and activity. This can't be undone.
+              </p>
+              <div class="modal-actions">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-danger">Delete lead</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="empty">
+          <h2 class="section-title">Empty state</h2>
+          <p class="section-desc">
+            Short text, centred. Optional single action below. No illustration,
+            no large heading.
+          </p>
+
+          <div class="preview">
+            <div class="empty">
+              <p>No leads yet.</p>
+              <p>Leads submitted through your contact form will appear here.</p>
+              <div style="margin-top: 16px">
+                <button class="btn btn-primary btn-sm">
+                  Add lead manually
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      function toggleTheme() {
+        const root = document.documentElement;
+        const isDark = root.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+        updateTokenDump();
+        updateSwatchValues();
+      }
+
+      (function initTheme() {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        if (saved === "dark" || (!saved && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+
+      const TOKEN_KEYS = [
+        "bg-canvas",
+        "bg-surface",
+        "bg-subtle",
+        "bg-muted",
+        "border-default",
+        "border-strong",
+        "text-primary",
+        "text-secondary",
+        "text-tertiary",
+        "accent",
+        "accent-hover",
+        "accent-subtle-bg",
+        "success",
+        "success-subtle-bg",
+        "warning",
+        "warning-subtle-bg",
+        "danger",
+        "danger-subtle-bg",
+        "neutral-subtle-bg",
+      ];
+
+      function updateSwatchValues() {
+        document.querySelectorAll(".swatch-value").forEach((el) => {
+          const key = el.getAttribute("data-token");
+          const value = getComputedStyle(document.documentElement)
+            .getPropertyValue("--" + key)
+            .trim();
+          el.textContent = value;
+        });
+      }
+
+      function updateTokenDump() {
+        const lines = TOKEN_KEYS.map((k) => {
+          const v = getComputedStyle(document.documentElement)
+            .getPropertyValue("--" + k)
+            .trim();
+          return `--${k}: ${v};`;
+        }).join("\n");
+        const dump = document.getElementById("token-dump");
+        if (dump) dump.textContent = lines;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        updateSwatchValues();
+        updateTokenDump();
+      });
+    </script>
+  </body>
+</html>
