@@ -146,10 +146,7 @@ describe("POST /api/capture (Public Lead Capture)", () => {
     assert.equal(leads.length, 2);
   });
 
-  // Note: this test temporarily enables the limiter via TEST_RATE_LIMIT
-  // so that a request-counting store is populated only for the duration
-  // of this block. The store is not reset afterward — any test added
-  // below that also enables the limiter will start from count=6.
+  
   it("enforces rate limit of 5 requests per hour and returns 429 RATE_LIMITED on the sixth submission", async () => {
     process.env.TEST_RATE_LIMIT = "true";
 

@@ -80,7 +80,7 @@ describe("GET /api/leads", () => {
     assert.equal(res.body.data.length, 1);
     assert.equal(res.body.data[0].name, "Thandi Mokoena");
 
-    // Special regex characters should be escaped safely, not throw SyntaxError or leak all leads
+
     const regexTestRes = await request(app)
       .get("/api/leads?search=(")
       .set("Cookie", authCookie);

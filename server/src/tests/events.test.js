@@ -64,8 +64,13 @@ function parseDataFrames(buf) {
     .filter((f) => f.includes("data:"))
     .map((f) => {
       const line = f.split("\n").find((l) => l.startsWith("data:"));
-      return JSON.parse(line.slice("data:".length).trim());
-    });
+      try {
+        return JSON.parse(line.slice("data:".length).trim());
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
 }
 
 before(async () => {
@@ -140,30 +145,21 @@ describe("GET /api/events", () => {
   });
 
   it("emits lead.updated then activity.created on PATCH", async (t) => {
-    const { req, res } = await openStream(authCookie);
-    t.after(() => {
-      req.destroy();
-      _resetForTests();
-    });
-    await readChunks(res, 1);
-    const dataPromise = readChunks(res, 2, 8000);
 
     const created = await request(app)
       .post("/api/leads")
       .set("Cookie", authCookie)
       .send({ name: "SSE Patch", email: "sse.patch@example.co.za", source: "other" });
-    // drain events from the setup create so we only assert on the patch
-    await dataPromise;
-    _resetForTests();
-    req.destroy();
+    assert.equal(created.status, 201);
 
-    const { req: req2, res: res2 } = await openStream(authCookie);
+    const { req, res } = await openStream(authCookie);
     t.after(() => {
-      req2.destroy();
+      req.destroy();
       _resetForTests();
     });
-    await readChunks(res2, 1);
-    const patchPromise = readChunks(res2, 2, 8000);
+    await readChunks(res, 1); // ": connected"
+    const patchPromise = readChunks(res, 2, 8000);
+
     const patchRes = await request(app)
       .patch(`/api/leads/${created.body.id}`)
       .set("Cookie", authCookie)

@@ -12,7 +12,7 @@ export const daysFromNow = (days) => {
 };
 
 export async function seedDatabase() {
-  // Clear existing collections
+
   await Promise.all([
     User.deleteMany({}),
     Lead.deleteMany({}),
@@ -30,7 +30,7 @@ export async function seedDatabase() {
   });
   console.log(`Created admin user: ${admin.email} (${admin._id})`);
 
-  // 2. Create 12 Leads (consistent .co.za domain)
+  // 2. Create 12 Leads 
   const leadsData = [
     {
       name: "Amahle Zulu",

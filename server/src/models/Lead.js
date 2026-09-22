@@ -56,9 +56,6 @@ const leadSchema = new mongoose.Schema(
 leadSchema.index({ status: 1, followUpDate: 1 });
 leadSchema.index({ createdAt: -1 });
 
-// Cascade delete lives on findOneAndDelete only.
-// The API's delete route must use Lead.findOneAndDelete().
-// Do not add a deleteOne route without also handling cascade.
 leadSchema.pre("findOneAndDelete", async function () {
   const doc = await this.model.findOne(this.getQuery());
   if (doc) {
