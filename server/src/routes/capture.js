@@ -1,8 +1,10 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import { Lead, Note, Activity } from "../models/index.js";
+import { Lead, Note } from "../models/index.js";
 import { asyncHandler, validate } from "../utils/errors.js";
+import { recordActivity } from "../services/activity.js";
+import { emit } from "../realtime/broadcaster.js";
 
 const router = Router();
 
@@ -71,31 +73,24 @@ router.post(
       console.error("Note creation failed on capture:", err.message);
     }
 
-    try {
-      await Activity.create({
-        leadId: lead._id,
-        actorId: null,
-        type: "lead_created",
-        meta: { source: lead.source },
-      });
-    } catch (err) {
-      console.error("Activity logging failed:", err.message);
-    }
+    emit("lead.created", { lead: lead.toJSON() });
+
+    await recordActivity({
+      leadId: lead._id,
+      actorId: null,
+      type: "lead_created",
+      meta: { source: lead.source },
+    });
 
     if (note) {
-      try {
-        await Activity.create({
-          leadId: lead._id,
-          actorId: null,
-          type: "note_added",
-          meta: { noteId: note._id },
-        });
-      } catch (err) {
-        console.error("Activity logging failed:", err.message);
-      }
+      await recordActivity({
+        leadId: lead._id,
+        actorId: null,
+        type: "note_added",
+        meta: { noteId: note._id },
+      });
     }
 
-// TODO(Phase 5): broadcast lead.created and activity.created over SSE.
     res.json({
       ok: true,
       message: "Thanks — we'll be in touch.",

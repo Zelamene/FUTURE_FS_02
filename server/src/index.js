@@ -9,6 +9,7 @@ import { User, Lead } from "./models/index.js";
 import authRouter from "./routes/auth.js";
 import leadsRouter from "./routes/leads.js";
 import captureRouter from "./routes/capture.js";
+import eventsRouter from "./routes/events.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/capture", captureRouter);
+app.use("/api/events", eventsRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });

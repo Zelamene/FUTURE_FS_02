@@ -460,6 +460,19 @@ paths:
       responses:
         '200':
           description: Event stream opened
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: text/event-stream; charset=utf-8
+            Cache-Control:
+              schema:
+                type: string
+                example: no-cache, no-transform
+            X-Accel-Buffering:
+              schema:
+                type: string
+                example: no
           content:
             text/event-stream:
               schema:
@@ -470,14 +483,14 @@ paths:
                   summary: A new lead arrived via public capture
                   value: |
                     event: lead.created
-                    data: {"type":"lead.created","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","name":"Thandi Mokoena","source":"contact-form","status":"new"}},"at":"2026-09-11T14:02:11.000Z"}
+                    data: {"type":"lead.created","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","name":"Thandi Mokoena","email":"thandi@example.co.za","phone":"0821234567","company":"Mokoena Consulting","source":"contact-form","status":"new","followUpDate":null,"lastContactedAt":null,"createdAt":"2026-09-11T08:00:00.000Z","updatedAt":"2026-09-11T08:00:00.000Z"}},"at":"2026-09-11T14:02:11.000Z"}
 
                     : ping
                 leadUpdated:
                   summary: A lead status changed
                   value: |
                     event: lead.updated
-                    data: {"type":"lead.updated","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","status":"contacted"}},"at":"2026-09-11T14:05:00.000Z"}
+                    data: {"type":"lead.updated","payload":{"lead":{"id":"64f1c2b7a1e4d2f8b3c9a001","name":"Thandi Mokoena","email":"thandi@example.co.za","phone":"0821234567","company":"Mokoena Consulting","source":"contact-form","status":"contacted","followUpDate":null,"lastContactedAt":"2026-09-11T14:05:00.000Z","createdAt":"2026-09-11T08:00:00.000Z","updatedAt":"2026-09-11T14:05:00.000Z"}},"at":"2026-09-11T14:05:00.000Z"}
                 leadDeleted:
                   summary: A lead was deleted
                   value: |

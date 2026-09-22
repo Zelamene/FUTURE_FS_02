@@ -3,6 +3,8 @@ import { z } from "zod";
 import { Lead, Note, Activity } from "../models/index.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { asyncHandler, validate, validateQuery, notFound } from "../utils/errors.js";
+import { recordActivity } from "../services/activity.js";
+import { emit } from "../realtime/broadcaster.js";
 
 const router = Router();
 
@@ -131,16 +133,14 @@ router.post(
   asyncHandler(async (req, res) => {
     const lead = await Lead.create(req.body);
 
-    try {
-      await Activity.create({
-        leadId: lead._id,
-        actorId: req.user._id,
-        type: "lead_created",
-        meta: { source: lead.source },
-      });
-    } catch (err) {
-      console.error("Activity logging failed:", err.message);
-    }
+    emit("lead.created", { lead: lead.toJSON() });
+
+    await recordActivity({
+      leadId: lead._id,
+      actorId: req.user._id,
+      type: "lead_created",
+      meta: { source: lead.source },
+    });
 
     res.status(201).json(lead);
   })
@@ -210,48 +210,38 @@ router.patch(
     Object.assign(lead, req.body);
     await lead.save();
 
+    emit("lead.updated", { lead: lead.toJSON() });
+
     const updatedFields = ["name", "email", "phone", "company", "source"];
     const changedFields = updatedFields.filter(
       (f) => req.body[f] !== undefined && String(req.body[f]) !== String(oldValues[f])
     );
 
     if (changedFields.length > 0) {
-      try {
-        await Activity.create({
-          leadId: lead._id,
-          actorId: req.user._id,
-          type: "lead_updated",
-          meta: { fields: changedFields },
-        });
-      } catch (err) {
-        console.error("Activity logging failed:", err.message);
-      }
+      await recordActivity({
+        leadId: lead._id,
+        actorId: req.user._id,
+        type: "lead_updated",
+        meta: { fields: changedFields },
+      });
     }
 
     if (statusChanged) {
-      try {
-        await Activity.create({
-          leadId: lead._id,
-          actorId: req.user._id,
-          type: "status_changed",
-          meta: { from: oldStatus, to: lead.status },
-        });
-      } catch (err) {
-        console.error("Activity logging failed:", err.message);
-      }
+      await recordActivity({
+        leadId: lead._id,
+        actorId: req.user._id,
+        type: "status_changed",
+        meta: { from: oldStatus, to: lead.status },
+      });
     }
 
     if (followUpChanged) {
-      try {
-        await Activity.create({
-          leadId: lead._id,
-          actorId: req.user._id,
-          type: "follow_up_set",
-          meta: { from: oldFollowUp, to: lead.followUpDate },
-        });
-      } catch (err) {
-        console.error("Activity logging failed:", err.message);
-      }
+      await recordActivity({
+        leadId: lead._id,
+        actorId: req.user._id,
+        type: "follow_up_set",
+        meta: { from: oldFollowUp, to: lead.followUpDate },
+      });
     }
 
     res.json(lead);
@@ -269,6 +259,8 @@ router.delete(
     if (!lead) {
       throw notFound("Lead not found");
     }
+
+    emit("lead.deleted", { leadId: lead._id.toString() });
 
     res.status(204).end();
   })
@@ -311,16 +303,12 @@ router.post(
       body: req.body.body,
     });
 
-    try {
-      await Activity.create({
-        leadId: lead._id,
-        actorId: req.user._id,
-        type: "note_added",
-        meta: { noteId: note._id },
-      });
-    } catch (err) {
-      console.error("Activity logging failed:", err.message);
-    }
+    await recordActivity({
+      leadId: lead._id,
+      actorId: req.user._id,
+      type: "note_added",
+      meta: { noteId: note._id },
+    });
 
     res.status(201).json(note);
   })
